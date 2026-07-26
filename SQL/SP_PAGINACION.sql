@@ -14,21 +14,22 @@ BEGIN
 	SET @RowsPerPage = 10;
 
 	BEGIN TRY
-		-- Metadatos de paginación (OUTPUT)
-		SELECT 
-			@o_pageNumber = @i_pageNumber,
-			@o_pageSize = @RowsPerPage,
-			@o_totalRows = COUNT(1)
-		FROM [SQM_GENERAL].[VW_GENERAL_PRODUCTS];
-
 		-- Datos paginados
 		SELECT GP.*
 		FROM [SQM_GENERAL].[VW_GENERAL_PRODUCTS] AS GP
+		--WHERE
 		ORDER BY GP.ProductID, GP.ProviderID DESC
 		OFFSET (@i_pageNumber - 1) * @RowsPerPage ROWS
 		FETCH NEXT @RowsPerPage ROWS ONLY;
 		
-		IF @@ROWCOUNT > 0
+		-- Metadatos de paginación (OUTPUT)
+		SELECT 
+			@o_pageNumber = @i_pageNumber,
+			@o_pageSize = @@ROWCOUNT,
+			@o_totalRows = COUNT(1)
+		FROM [SQM_GENERAL].[VW_GENERAL_PRODUCTS];
+
+		IF (@o_pageSize > 0)
 			BEGIN
 				SET @o_code = 200
 				SET @o_message = 'Carga de productos satisfactorio'
